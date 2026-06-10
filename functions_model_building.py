@@ -173,8 +173,8 @@ class MyF1Metric(keras.metrics.Metric):
         self.average = average
 
     def update_state(self, y_true, y_pred, sample_weight=None):
-        self.y_true.extend(y_true.numpy())
-        self.y_pred.extend(np.argmax(y_pred.numpy(), axis=1))
+        self.y_true.extend(y_true.cpu().numpy())
+        self.y_pred.extend(np.argmax(y_pred.cpu().numpy(), axis=1))
 
     def result(self):
         return f1_score(self.y_true, self.y_pred, average=self.average)
