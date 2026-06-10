@@ -5,7 +5,7 @@ from keras.applications.vgg16 import VGG16
 from keras.src.callbacks.history import History
 from pathlib import Path
 from PIL import Image
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, f1_score
 from sklearn.preprocessing import LabelEncoder
 from typing import Callable, Union
 import keras.models
@@ -163,3 +163,22 @@ class MyKerasSequence(keras.utils.Sequence):
             # Fix bad perf in transfer learning by implementing one of the Keras native preprocessing functions
             batch_images = self.preprocessing_func(batch_images * 255.0)
         return batch_images, batch_encoded_labels
+
+
+class MyF1Metric(keras.metrics.Metric):
+    def __init__(self, name='f1_macro', average='macro', **kwargs):
+        super().__init__(name=name, **kwargs)
+        self.y_true = []
+        self.y_pred = []
+        self.average = average
+
+    def update_state(self, y_true, y_pred, sample_weight=None):
+        self.y_true.extend(y_true.numpy())
+        self.y_pred.extend(np.argmax(y_pred.numpy(), axis=1))
+
+    def result(self):
+        return f1_score(self.y_true, self.y_pred, average=self.average)
+
+    def reset_state(self):
+        self.y_true = []
+        self.y_pred = []
