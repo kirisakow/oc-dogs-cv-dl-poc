@@ -179,6 +179,7 @@ class MyKerasSequence(keras.utils.Sequence):
         return batch_images, batch_encoded_labels
 
 
+@keras.saving.register_keras_serializable()
 class MyF1Metric(keras.metrics.Metric):
     def __init__(self, name='f1_macro', average='macro', **kwargs):
         super().__init__(name=name, **kwargs)
