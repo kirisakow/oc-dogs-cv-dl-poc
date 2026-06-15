@@ -5,7 +5,7 @@ from keras.applications.vgg16 import VGG16
 from keras.src.callbacks.history import History
 from pathlib import Path
 from PIL import Image
-from sklearn.metrics import confusion_matrix, f1_score
+from sklearn.metrics import classification_report, confusion_matrix, f1_score
 from sklearn.preprocessing import LabelEncoder
 from typing import Callable, Union
 import keras.models
@@ -111,11 +111,9 @@ def plot_accuracy_and_loss_values(history: History,
     plt.show()
 
 
-def plot_confusion_matrix(model: keras.models.Model,
-                          X_test, y_test, class_labels,
+def plot_confusion_matrix(y_pred, y_test, class_labels,
                           title: str = None,
                           ) -> None:
-    y_pred = model.predict(X_test)
     y_pred_cls = np.argmax(y_pred, axis=1)
     y_true = np.argmax(y_test, axis=1) if len(y_test.shape) > 1 else y_test
     cm = confusion_matrix(y_true, y_pred_cls)
@@ -131,6 +129,16 @@ def plot_confusion_matrix(model: keras.models.Model,
         plt.title(title)
     plt.tight_layout()
     plt.show()
+
+
+def print_classification_report(y_test, y_pred, class_labels,
+                                ) -> None:
+    y_true = np.argmax(y_test, axis=1) if len(y_test.shape) > 1 else y_test
+    y_pred_cls = np.argmax(y_pred, axis=1)
+    clean_class_labels = tuple(BREED_ID_SPLITTER_REGEX_PTRN.split(label_with_id)[1] for label_with_id in class_labels)
+    print(
+        classification_report(y_true, y_pred_cls, target_names=clean_class_labels)
+    )
 
 
 class MyKerasSequence(keras.utils.Sequence):
