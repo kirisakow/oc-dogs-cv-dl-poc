@@ -15,7 +15,6 @@ import matplotlib.ticker as ticker
 import numpy as np
 import re
 import seaborn as sns
-import torchvision as tov
 
 BREED_ID_SPLITTER_REGEX_PTRN = re.compile(r'^n\d+-')
 
@@ -74,7 +73,7 @@ def build_model_from_scratch(*,
     if data_augm:
         x = data_augm(inputs)
 
-    x = layers.Rescaling(1./255)(x)
+    x = layers.Rescaling(1. / 255)(x)
 
     for n_filters in filters:
         x = layers.Conv2D(n_filters, kernel_size, padding='same', activation='relu')(x)
@@ -172,7 +171,7 @@ class MyKerasSequence(keras.utils.Sequence):
 
     def __getitem__(self, idx):
         idx_from = self.batch_size * idx
-        idx_to   = self.batch_size * (idx + 1)
+        idx_to = self.batch_size * (idx + 1)
         batch_images = []
         for path in self.xset[idx_from:idx_to]:
             img = Image.open(path).convert('RGB')
