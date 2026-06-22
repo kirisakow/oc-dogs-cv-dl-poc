@@ -15,8 +15,22 @@ import matplotlib.ticker as ticker
 import numpy as np
 import re
 import seaborn as sns
+import tempfile
 
-BREED_ID_SPLITTER_REGEX_PTRN = re.compile(r'^n\d+-')
+WORDNET_ID_REGEX_PTRN = re.compile(r'^n\d+-')
+
+
+def temp_dir_with_symlinks(train_paths, val_paths, test_paths,
+                           ) -> str:
+    subsets = {'train': train_paths, 'val': val_paths, 'test': test_paths}
+    temp_dir = Path(tempfile.mkdtemp(prefix='ultralytics_tempdir_'))
+    for subset_name, subset_items in subsets.items():
+        for path in subset_items:
+            class_label = WORDNET_ID_REGEX_PTRN.split(str(path.parent.name))[1]
+            dest = temp_dir / subset_name / class_label / path.name
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            dest.symlink_to(path.resolve())
+    return str(temp_dir)
 
 
 def build_model_from_pretrained(*,
@@ -117,7 +131,7 @@ def plot_confusion_matrix(y_pred, y_test, class_labels,
     y_true = np.argmax(y_test, axis=1) if len(y_test.shape) > 1 else y_test
     cm = confusion_matrix(y_true, y_pred_cls)
     plt.figure(figsize=(6, 4))
-    class_labels = tuple(BREED_ID_SPLITTER_REGEX_PTRN.split(label_with_id)[1] for label_with_id in class_labels)
+    class_labels = tuple(WORDNET_ID_REGEX_PTRN.split(label_with_id)[1] for label_with_id in class_labels)
     sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
                 xticklabels=class_labels, yticklabels=class_labels)
     plt.xticks(rotation=45, ha='right')
@@ -134,7 +148,7 @@ def print_classification_report(y_test, y_pred, class_labels,
                                 ) -> None:
     y_true = np.argmax(y_test, axis=1) if len(y_test.shape) > 1 else y_test
     y_pred_cls = np.argmax(y_pred, axis=1)
-    clean_class_labels = tuple(BREED_ID_SPLITTER_REGEX_PTRN.split(label_with_id)[1] for label_with_id in class_labels)
+    clean_class_labels = tuple(WORDNET_ID_REGEX_PTRN.split(label_with_id)[1] for label_with_id in class_labels)
     print(
         classification_report(y_true, y_pred_cls, target_names=clean_class_labels)
     )
