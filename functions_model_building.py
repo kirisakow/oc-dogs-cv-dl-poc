@@ -131,7 +131,6 @@ def plot_confusion_matrix(y_pred, y_test, class_labels,
     y_true = np.argmax(y_test, axis=1) if len(y_test.shape) > 1 else y_test
     cm = confusion_matrix(y_true, y_pred_cls)
     plt.figure(figsize=(6, 4))
-    class_labels = tuple(WORDNET_ID_REGEX_PTRN.split(label_with_id)[1] for label_with_id in class_labels)
     sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
                 xticklabels=class_labels, yticklabels=class_labels)
     plt.xticks(rotation=45, ha='right')
@@ -148,9 +147,8 @@ def print_classification_report(y_test, y_pred, class_labels,
                                 ) -> None:
     y_true = np.argmax(y_test, axis=1) if len(y_test.shape) > 1 else y_test
     y_pred_cls = np.argmax(y_pred, axis=1)
-    clean_class_labels = tuple(WORDNET_ID_REGEX_PTRN.split(label_with_id)[1] for label_with_id in class_labels)
     print(
-        classification_report(y_true, y_pred_cls, target_names=clean_class_labels)
+        classification_report(y_true, y_pred_cls, target_names=class_labels)
     )
 
 
