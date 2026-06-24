@@ -33,31 +33,35 @@ def temp_dir_with_symlinks(train_paths, val_paths, test_paths,
     return str(temp_dir)
 
 
+def unfreeze_layers(model: keras.Model,
+                    *,
+                    layers_to_unfreeze: Union[int, str],
+                    ) -> keras.Model:
+    if not isinstance(layers_to_unfreeze, (str, int)):
+        raise ValueError("the layers_to_finetune parameter must be of type str or int")
+    elif isinstance(layers_to_unfreeze, int) and layers_to_unfreeze > 0:
+        n_layers_to_finetune = min(layers_to_unfreeze, len(model.layers))
+        for layer in model.layers[-n_layers_to_finetune:]:
+            if not isinstance(layer, layers.BatchNormalization):
+                layer.trainable = True
+    elif isinstance(layers_to_unfreeze, str):
+        for layer in model.layers:
+            if layers_to_unfreeze in layer.name and not isinstance(layer, layers.BatchNormalization):
+                layer.trainable = True
+    return model
+
+
 def build_model_from_pretrained(*,
                                 pretrained_model: Union[EfficientNetB0, EfficientNetV2B0, VGG16],
                                 n_classes: int,
                                 target_img_size: tuple[int],
                                 dropout_rate: float = None,
-                                layers_to_finetune: Union[str, int] = None,
                                 experiment_name: str = 'CNN_model_from_pretrained',
                                 ) -> keras.models.Model:
     inputs = layers.Input(shape=(*target_img_size, 3))
     model = pretrained_model(include_top=False, input_tensor=inputs, weights="imagenet")
     # Freeze the pretrained weights
     model.trainable = False
-    # Finetune a targeted block of layers, if any
-    if layers_to_finetune:
-        if not isinstance(layers_to_finetune, (str, int)):
-            raise ValueError("the layers_to_finetune parameter must be of type str or int")
-        elif isinstance(layers_to_finetune, str):
-            for layer in model.layers:
-                if layers_to_finetune in layer.name and not isinstance(layer, layers.BatchNormalization):
-                    layer.trainable = True
-        elif isinstance(layers_to_finetune, int):
-            n_layers_to_finetune = min(layers_to_finetune, len(model.layers))
-            for layer in model.layers[-n_layers_to_finetune:]:
-                if not isinstance(layer, layers.BatchNormalization):
-                    layer.trainable = True
     # Rebuild top
     if 'VGG' in pretrained_model.__name__:
         # Use Flatten() for VGG* models
