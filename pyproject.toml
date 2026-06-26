@@ -10,10 +10,11 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
 ]
 dependencies = [
+    "grad-cam>=1.5.5",
     "lxml (>=6.0.2,<7.0.0)",
     "matplotlib (>=3.10.8,<4.0.0)",
     "numpy (>=2.4.3,<3.0.0)",
-    "opencv-python (>=4.13.0.92,<5.0.0.0)",
+    "opencv-python>=4.13.0.92,<5.0.0.0",
     "pandas (>=3.0.1,<4.0.0)",
     "pillow (>=12.1.1,<13.0.0)",
     "pip>=26.1.2",
