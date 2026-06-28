@@ -1,3 +1,6 @@
+from yolo_cam.eigen_cam import EigenCAM
+from yolo_cam.utils.image import show_cam_on_image
+
 from keras import layers
 from keras.applications.efficientnet import EfficientNetB0
 from keras.applications.efficientnet_v2 import EfficientNetV2B0
@@ -8,6 +11,8 @@ from PIL import Image
 from sklearn.metrics import classification_report, confusion_matrix, f1_score
 from sklearn.preprocessing import LabelEncoder
 from typing import Callable, Union
+from ultralytics import YOLO
+import cv2
 import keras.models
 import keras.utils
 import matplotlib.pyplot as plt
@@ -18,6 +23,30 @@ import seaborn as sns
 import tempfile
 
 WORDNET_ID_REGEX_PTRN = re.compile(r'^n\d+-')
+
+
+def plot_eigen_cam(*,
+                   path_to_img: str | Path,
+                   img_size: tuple[int, int],
+                   expected_cls: int | str,
+                   predicted_cls: int | str,
+                   model: YOLO,
+                   layers_to_unfreeze: int,
+                   task: str = 'cls',
+                   ) -> None:
+    img = cv2.imread(path_to_img)
+    img = cv2.resize(img, img_size)
+    rgb_img = img.copy()
+    img = np.float32(img) / 255
+    # model = model.cpu()
+    target_layers = [model.model.model[-layers_to_unfreeze]]
+    cam = EigenCAM(model, target_layers, task=task)
+    grayscale_cam = cam(rgb_img)[0, :, :]
+    cam_image = show_cam_on_image(img, grayscale_cam, use_rgb=True)
+    # plt.rcParams["figure.figsize"] = [3.0, 3.0]
+    plt.title(f"{expected_cls!r}\nidentifié comme\n{predicted_cls!r}", fontsize=22)
+    plt.imshow(cam_image)
+    plt.show()
 
 
 def temp_dir_with_symlinks(train_paths, val_paths, test_paths,

@@ -19,7 +19,7 @@
   - [x] puis le réentraînement plus en profondeur (dit le *fine tuning*), avec un *learning rate* faible ;
   - [x] d'abord sur 3 classes,
   - [x] ensuite sur 120 classes.
-- [ ] Ajouter interprétabilité (gradcam ou autre, peut être yolo a ça)
+- [x] Ajouter interprétabilité (gradcam ou autre, peut être yolo a ça)
 
 ## Note méthodologique
 
