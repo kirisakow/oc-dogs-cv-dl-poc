@@ -2,18 +2,24 @@
 
 ## Notebook 1 : Modéle baseline : EfficientNet
 
-- [ ] Mettre en place une méthode classique :
-  - [ ] EfficientNet déjà utilisé, avec les 120 classes,
-  - [ ] transfer learning
-  - [ ] puis fine tuning,
-  - [ ] À logguer :
-    - [ ] 3 métriques (accuracy, top5 accuracy, f1_macro),
-    - [ ] temps d'entraînement et
-    - [ ] temps d'inférence.
+- [x] Transfer learning (le réentraînement) depuis le modèle EfficientNet
+  - [x] d'abord réentraînement de l'embout,
+  - [x] puis le réentraînement plus en profondeur (dit le *fine tuning*), avec un *learning rate* faible ;
+  - [x] d'abord sur 3 classes,
+  - [x] ensuite sur 120 classes.
+- [x] À logguer :
+  - [x] 3 métriques (accuracy, top5 accuracy, f1_macro),
+  - [x] temps d'entraînement et
+  - [x] temps d'inférence.
 
 ## Notebook 2 : Modéle SoTA : YOLO26
 
-- [ ] YOLO26 en cls de tailles nano et small.
+- [x] Transfer learning (le réentraînement) depuis le modèle YOLO26 en cls de tailles nano, small et medium.
+  - [x] d'abord réentraînement de l'embout,
+  - [x] puis le réentraînement plus en profondeur (dit le *fine tuning*), avec un *learning rate* faible ;
+  - [x] d'abord sur 3 classes,
+  - [x] ensuite sur 120 classes.
+- [ ] Ajouter interprétabilité (gradcam ou autre, peut être yolo a ça)
 
 ## Note méthodologique
 
@@ -25,7 +31,10 @@
   - [ ] YOLO26: A Comprehensive Architecture Overview and Key Improvements
     - [ ] arXiv:2602.14582·Priyanto Hidayatullah et al.·↑ 1
 
-...
+## Steamlit
+
+- [ ] Afficher la perf de YOLO seulement, pas du modèle baseline.
+-
 
 ## Présentation
 
