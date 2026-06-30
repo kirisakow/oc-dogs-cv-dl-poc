@@ -9,6 +9,8 @@ models/
 !models/from_pretrained/.gitkeep
 !models/from_scratch/.gitkeep
 train_data.mat
+runs/
+*.pt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -25,6 +25,45 @@ import tempfile
 WORDNET_ID_REGEX_PTRN = re.compile(r'^n\d+-')
 
 
+def list_files_from(*,
+                    src_dir: str | list[str | Path],
+                    ext: str | list[str],
+                    recursive: bool = True,
+                    ) -> list[Path]:
+    src_dir = [src_dir] if isinstance(src_dir, str) else src_dir
+    ext = [ext] if isinstance(ext, str) else ext
+    files = []
+    for dir_path in src_dir:
+        dir_path = Path(dir_path)
+        if not dir_path.exists():
+            continue
+        if ext:
+            patterns = list({f"*.{e.lower()}" for e in ext} | {f"*.{e.upper()}" for e in ext})
+            for pattern in patterns:
+                files.extend(dir_path.rglob(pattern) if recursive else dir_path.glob(pattern))
+        else:
+            files.extend(dir_path.rglob('*') if recursive else dir_path.glob('*'))
+    return sorted({f for f in files if f.is_file()})
+
+
+def generate_eigen_cam(img: cv2.UMat,
+                       model: YOLO,
+                       layers_to_unfreeze: int,
+                       task='cls',
+                       ) -> plt.Figure:
+    rgb_img = img.copy()
+    img_float = np.float32(img) / 255
+    target_layers = [model.model.model[-layers_to_unfreeze]]
+    cam = EigenCAM(model, target_layers, task=task)
+    grayscale_cam = cam(rgb_img)[0, :, :]
+    cam_image = show_cam_on_image(img_float, grayscale_cam, use_rgb=True)
+    fig, ax = plt.subplots(figsize=(6.4, 4.8))
+    ax.imshow(cam_image)
+    ax.axis('off')
+    plt.tight_layout()
+    return fig
+
+
 def plot_eigen_cam(*,
                    path_to_img: str | Path,
                    img_size: tuple[int, int],
@@ -64,7 +103,7 @@ def temp_dir_with_symlinks(train_paths, val_paths, test_paths,
 
 def unfreeze_layers(model: keras.Model,
                     *,
-                    layers_to_unfreeze: Union[int, str],
+                    layers_to_unfreeze: int | str,
                     ) -> keras.Model:
     if not isinstance(layers_to_unfreeze, (str, int)):
         raise ValueError("the layers_to_finetune parameter must be of type str or int")
@@ -83,7 +122,7 @@ def unfreeze_layers(model: keras.Model,
 def build_model_from_pretrained(*,
                                 pretrained_model: Union[EfficientNetB0, EfficientNetV2B0, VGG16],
                                 n_classes: int,
-                                target_img_size: tuple[int],
+                                target_img_size: tuple[int, int],
                                 dropout_rate: float = None,
                                 experiment_name: str = 'CNN_model_from_pretrained',
                                 ) -> keras.models.Model:
@@ -107,7 +146,7 @@ def build_model_from_pretrained(*,
 
 def build_model_from_scratch(*,
                              n_classes: int,
-                             target_img_size: tuple[int],
+                             target_img_size: tuple[int, int],
                              data_augm: keras.models.Sequential = None,
                              dropout_rate: float = None,
                              filters: list[int] = [32, 64],
