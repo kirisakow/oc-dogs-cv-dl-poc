@@ -1,15 +1,15 @@
 # Étapes à suivre
 
-## Notebook 1 : Modéle baseline : EfficientNet
+## Notebook 1 : Modéle baseline : EfficientNetB0
 
-- [x] Transfer learning (le réentraînement) depuis le modèle EfficientNet
-  - [x] d'abord réentraînement de l'embout,
-  - [x] puis le réentraînement plus en profondeur (dit le *fine tuning*), avec un *learning rate* faible ;
+- [x] Effectuer le réentraînement d'un modèle préalablement entraîné, dit [le *transfer learning*][7] :
+  - [x] d'abord réentraîner l'embout, dit *“rebuild top step”*, du classificateur, avec un learning rate régulier,
+  - [x] puis réentraîner les couches profondes, dit *“fine tuning step”*, avec un *learning rate* faible ;
   - [x] d'abord sur 3 classes,
-  - [x] ensuite sur 120 classes.
+  - [x] ensuite sur les 120 classes.
 - [x] À logguer :
-  - [x] 3 métriques (accuracy, top5 accuracy, f1_macro),
-  - [x] temps d'entraînement et
+  - [x] 3 métriques (accuracy, top-5 accuracy, f1_macro),
+  - [x] temps d'entraînement,
   - [x] temps d'inférence.
 
 ## Notebook 2 : Modéle SoTA : YOLO26
@@ -22,16 +22,19 @@
 
 ## Plan de travail
 
-- [ ] Un plan de travail prévisionnel, respectant [le modèle fourni][1] et transformé en pdf (1 page).
+- [x] Un plan de travail prévisionnel, respectant [le modèle fourni][1] et transformé en pdf (1 page).
 
 ## Note méthodologique
 
 - [ ] Un note méthodologique présentant la preuve de concept respectant [le template fourni][2] et transformé en pdf (10 pages maximum).
 
 - [ ] Faire une synthèse commune des 3 articles pertinents énumérés ci-dessous, qui sera incluse dans les slides et/ou la note méthodo et qui servira à répondre aux questions lors de la soutenance :
-  - YOLO26: Key Architectural Enhancements and Performance Benchmarking for Real-Time Object Detection (arXiv:2509.25164·Ranjan Sapkota et al.)
-  - Ultralytics YOLO Evolution: An Overview of YOLO26, YOLO11, YOLOv8 and YOLOv5 Object Detectors for Computer Vision and Pattern Recognition (arXiv:2510.09653·Ranjan Sapkota et al.)
-  - YOLO26: A Comprehensive Architecture Overview and Key Improvements (arXiv:2602.14582·Priyanto Hidayatullah et al.)
+
+  - YOLO26: Key Architectural Enhancements and Performance Benchmarking for Real-Time Object Detection ([arXiv:2509.25164·Ranjan Sapkota et al.][4])
+
+  - Ultralytics YOLO Evolution: An Overview of YOLO26, YOLO11, YOLOv8 and YOLOv5 Object Detectors for Computer Vision and Pattern Recognition ([arXiv:2510.09653·Ranjan Sapkota et al.][5])
+
+  - YOLO26: A Comprehensive Architecture Overview and Key Improvements ([arXiv:2602.14582·Priyanto Hidayatullah et al.][6])
 
 ## Dashboard sous Steamlit
 
@@ -54,3 +57,7 @@
 [1]: https://course.oc-static.com/projects/MLE_V2_P7/Mode%CC%80le_Plan_pre%CC%81visionnel.docx
 [2]: https://course.oc-static.com/projects/MLE_V2_P7/Mode%CC%80le_Note_Me%CC%81thodologique.docx
 [3]: https://github.com/rigvedrs/YOLO-26-CAM
+[4]: https://arxiv.org/abs/2509.25164
+[5]: https://arxiv.org/abs/2510.09653
+[6]: https://arxiv.org/abs/2602.14582
+[7]: https://keras.io/examples/vision/image_classification_efficientnet_fine_tuning/#transfer-learning-from-pretrained-weights
