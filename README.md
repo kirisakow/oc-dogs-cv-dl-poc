@@ -37,7 +37,7 @@ L'IHM du dashboard permet :
 
       ```bash
       # si votre gestionnaire de paquets est uv :
-      uv run --no-project streamlit run ISAKOV_Kiril_4_dashboard_052026.py
+      uv run streamlit run ISAKOV_Kiril_4_dashboard_052026.py
 
       # si votre gestionnaire de paquets est poetry :
       poetry run streamlit run ISAKOV_Kiril_4_dashboard_052026.py
