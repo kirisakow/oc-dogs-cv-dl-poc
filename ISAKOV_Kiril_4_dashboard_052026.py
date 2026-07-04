@@ -1,5 +1,15 @@
 #!.venv/bin/python
 """Streamlit GUI for image classification inference with YOLO models."""
+from img_preprocessing_utils import (
+    apply_gaussian_blur,
+    convert_to_grayscale,
+    crop_image,
+    equalize_histogram,
+    mirror_image,
+    normalize_image,
+    rotate_image,
+    whiten_image,
+)
 from utils import (
     generate_eigen_cam,
     list_files_from,
@@ -16,6 +26,7 @@ import streamlit as st
 
 DEFAULT_MODEL = "models/CNN__from=yolo26m-cls__n_cls=120__n_eps=20__LR=1e-05__FT=2__stage2.pt"
 LAYERS_TO_UNFREEZE = 2
+MAX_IMG_ROTATION = 30
 
 
 @st.cache_resource
@@ -50,7 +61,52 @@ def main():
             breed_label = None
         if pil_img:
             st.subheader(breed_label)
-            st.image(pil_img, width=640)
+            st.image(pil_img, width="stretch")
+            st.caption("Original image")
+
+            st.subheader("Examples of possible image preprocessing transformations")
+            grid_col1, grid_col2, grid_col3 = st.columns(3)
+            grid_col4, grid_col5, grid_col6 = st.columns(3)
+
+            with grid_col1:
+                whitened = whiten_image(pil_img)
+                st.image(whitened, width="stretch")
+                st.caption("Whitening")
+
+            with grid_col2:
+                equalized = equalize_histogram(pil_img)
+                st.image(equalized, width="stretch")
+                st.caption("Histogram Equalization")
+
+            with grid_col3:
+                normalized = normalize_image(pil_img)
+                st.image(normalized, width="stretch")
+                st.caption("Normalization")
+
+            with grid_col4:
+                grayscale = convert_to_grayscale(pil_img)
+                st.image(grayscale, width="stretch")
+                st.caption("Grayscale")
+
+            with grid_col5:
+                blurred = apply_gaussian_blur(pil_img)
+                st.image(blurred, width="stretch")
+                st.caption("Gaussian Blur")
+
+            with grid_col6:
+                random_angle = np.random.randint(-MAX_IMG_ROTATION, 1 + MAX_IMG_ROTATION)
+                rotated = rotate_image(
+                    mirror_image(pil_img, horizontal=True),
+                    angle=random_angle
+                )
+                if isinstance(rotated, np.ndarray):
+                    h, w = rotated.shape[:2]
+                else:
+                    w, h = rotated.size
+                crop_x, crop_y = w // 4, h // 4
+                cropped = crop_image(rotated, x=crop_x, y=crop_y, width=w - crop_x, height=h - crop_y)
+                st.image(cropped, width="stretch")
+                st.caption(f"H-Mirror&ensp;x&ensp;Random {random_angle}° Rotation&ensp;x&ensp;Crop")
 
     with col2:
         st.header("🎯 Prediction")
@@ -79,7 +135,7 @@ def main():
                             try:
                                 st.subheader("Prediction Results")
                                 fig = generate_eigen_cam(img=img_bgr, model=model, layers_to_unfreeze=LAYERS_TO_UNFREEZE, task='cls')
-                                st.pyplot(fig, width=640)
+                                st.pyplot(fig, width="stretch")
                             except Exception as cam_e:
                                 st.error(f"Error generating EigenCAM: {cam_e}")
                         st.caption("EigenCAM Visualization")
