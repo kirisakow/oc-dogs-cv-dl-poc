@@ -1,5 +1,7 @@
 # Projet OpenClassrooms « Développez une preuve de concept »
 
+🔗 Dépôt sur GitHub : https://github.com/kirisakow/oc-dogs-cv-dl-poc
+
 Il s'agit, dans le cadre d'une étude (imaginaire) de migration vers un modèle *deep learning* de classification d'images plus récent, d'entraîner sur un même dataset puis de comparer les performances de deux modèles : un vieux (censé être notre baseline) et un récent (de moins de 5 ans) : nous avons opté, respectivement, pour [EfficientNetB0][1] de Keras et [YOLO26 spécial classification][2] d'Ultralytics.
 
 Enfin, c'est le célèbre dataset [ImageNetDogs][3] de Stanford qui a servi de matière pour notre étude. Le dataset est composé de 20 580 images annotées et réparties entre 120 classes (races de chiens) à raison de 150 à 250 images par classe.
@@ -7,6 +9,8 @@ Enfin, c'est le célèbre dataset [ImageNetDogs][3] de Stanford qui a servi de m
 ## Notebook 1 ... Notebook 3
 
 ## Notebook 4 : Le dashboard, une IHM streamlit pour effectuer l'inférence de la classe d'une image donnée
+
+🔗 Déployé sur : https://oc-dogs-cv-dl-poc.streamlit.app
 
 L'IHM du dashboard permet :
 
