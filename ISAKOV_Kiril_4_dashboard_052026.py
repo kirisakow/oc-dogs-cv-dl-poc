@@ -1,6 +1,6 @@
 #!.venv/bin/python
 """Streamlit GUI for image classification inference with YOLO models."""
-from img_preprocessing_utils import (
+from utils_img_preprocessing import (
     apply_gaussian_blur,
     convert_to_grayscale,
     crop_image,
