@@ -1,6 +1,15 @@
 # Note méthodologique : preuve de concept
 
-## Dataset retenu
+Table des matières :
+
+- [1. Le dataset retenu](#1-le-dataset-retenu)
+- [2. Les concepts de l’algorithme récent](#2-les-concepts-de-lalgorithme-récent)
+- [3. La modélisation](#3-la-modélisation)
+- [4. Une synthèse des résultats](#4-une-synthèse-des-résultats)
+- [5. L’analyse de la feature importance globale et locale du nouveau modèle](#5-lanalyse-de-la-feature-importance-globale-et-locale-du-nouveau-modèle)
+- [6. Les limites et les améliorations possibles](#6-les-limites-et-les-améliorations-possibles)
+
+## 1. Le dataset retenu
 
 <!--
 *Présentez le dataset en 1 page maximum.*
@@ -18,7 +27,7 @@ Pour ce qui est de la répartition des images pour l'entraînement, la validatio
 - 10% pour la validation (2 058 images pour l'entraînement du modèle final)
 - 10% pour le test (2 058 images pour l'entraînement du modèle final)
 
-## Les concepts de l’algorithme récent
+## 2. Les concepts de l’algorithme récent
 
 <!--
 *Présentez, en 2 pages maximum, les principes de fonctionnement du nouvel algorithme.*
@@ -91,7 +100,7 @@ YOLO26 a été conçu avec une approche *edge-first*, c'est-à-dire optimisé d�
 
 Ces innovations positionnent YOLO26 comme un modèle de nouvelle génération, particulièrement adapté aux applications en temps réel sur des appareils à ressources limitées, tout en maintenant une précision de pointe pour la détection d'objets.
 
-## La modélisation
+## 3. La modélisation
 
 <!--
 *Présentez la méthodologie de modélisation, la métrique d'évaluation retenue et sa démarche d'optimisation, en 2 pages maximum.*
@@ -239,7 +248,7 @@ Les temps d'entraînement et d'inférence ont été mesurés de manière systém
 
 Ces mesures démontrent un avantage conséquent de YOLO26 en termes d'efficacité : un entraînement jusqu'à 10 fois plus rapide et une inférence 3 à 5 fois plus rapide que le modèle *baseline*, tout en maintenant une précision compétitive. Les tests préliminaires sur 3 classes ont confirmé cette tendance avec des temps proportionnellement réduits.
 
-## Une synthèse des résultats
+## 4. Une synthèse des résultats
 
 <!--
 *Présentez une synthèse des résultats comparés entre la technique récente et les techniques utilisées précédemment et une conclusion, en 2 pages maximum.*
@@ -317,7 +326,7 @@ Les courbes d'apprentissage sont disponibles dans les sous-répertoires respecti
 
 La migration vers YOLO26 se justifie pleinement dans notre contexte. Le modèle *state-of-the-art* surpasse le *baseline* EfficientNetB0 à la fois en termes de précision et d'efficacité, avec des gains particulièrement marqués en temps d'entraînement et d'inférence. Ces caractéristiques en font un choix optimal pour des déploiements en production, notamment sur des infrastructures à ressources limitées ou pour des applications nécessitant des mises à jour fréquentes du modèle.
 
-## L’analyse de la feature importance globale et locale du nouveau modèle
+## 5. L’analyse de la feature importance globale et locale du nouveau modèle
 
 <!--
 *Présentez l’analyse de la feature importance globale et locale du nouveau modèle, en 2 pages maximum.*
@@ -356,7 +365,7 @@ Cette pertinence s’explique notamment par deux innovations architecturales de 
 - la suppression du NMS (*Non-Maximum Suppression*) élimine une étape de post-traitement susceptible d’introduire des biais en filtrant ou fusionnant des détections selon des seuils arbitraires. L’inférence *end-to-end* produit directement des prédictions finalisées, rendant les cartes de chaleur plus fidèles aux activations réelles du réseau, sans distorsion due à des règles externes ;
 - la suppression de la DFL (*Distribution Focal Loss*) allège significativement le graphe computationnel, réduisant les dépendances entre modules. Cela permet un suivi plus direct du flux des caractéristiques depuis l’entrée jusqu’à la sortie, renforçant la fiabilité des visualisations.
 
-## Les limites et les améliorations possibles
+## 6. Les limites et les améliorations possibles
 
 <!--
 *Présentez les limites et les améliorations envisageables pour gagner en performance et en interprétabilité de l'approche de modélisation, en 1 page maximum.*
