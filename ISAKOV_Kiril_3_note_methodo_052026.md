@@ -103,6 +103,142 @@ Présenter pour les deux modèles :
 - Métriques
 -->
 
+### Contexte et objectifs
+
+Notre étude s'inscrit dans le cadre d'une migration hypothétique vers un modèle de classification d'images plus récent. L'objectif est de comparer les performances de deux approches : un modèle *baseline* représentatif des architectures traditionnelles, et un modèle *state-of-the-art* (SoTA) incarnant les dernières avancées en vision par ordinateur. Nous avons sélectionné EfficientNetB0 comme modèle de référence, pour son équilibre éprouvé entre précision et efficacité, et YOLO26 dans sa version classification, pour ses innovations architecturales récentes et son optimisation pour les déploiements *edge*.
+
+Cette comparaison vise à évaluer non seulement la précision brute, mais aussi des critères pratiques tels que le temps d'entraînement, le temps d'inférence, et la facilité de déploiement, afin de déterminer si la migration vers YOLO26 se justifie dans un contexte industriel.
+
+### Méthodologie commune
+
+#### Jeu de données
+
+Les deux modèles ont été entraînés et évalués sur le dataset ImageNetDogs dans sa totalité, soit 20 580 images réparties en 120 classes (races de chiens). Pour valider notre approche de manière itérative, nous avons initialement testé l'entraînement sur un sous-ensemble de 3 classes (deux classes nombreuses et une classe moins représentée) avant de procéder à l'entraînement final sur l'intégralité des 120 classes.
+
+#### Répartition des données
+
+Un *split* stratifié a été appliqué pour conserver la distribution des classes dans chacun des ensembles :
+
+- 80% pour l'entraînement (16 464 images)
+- 10% pour la validation (2 058 images)
+- 10% pour le test (2 058 images)
+
+Cette stratification est cruciale pour un dataset comme ImageNetDogs où le nombre d'images par classe varie entre 150 et 250, garantissant que chaque classe est représentée de manière proportionnelle dans chaque ensemble.
+
+#### Métriques d'évaluation
+
+Trois métriques principales ont été suivies pour évaluer les performances des modèles :
+
+- **Accuracy** : précision classique, mesurant le pourcentage de prédictions correctes
+- **Top-5 Accuracy** : précision élargie aux 5 prédictions les plus probables, pertinente pour un problème à 120 classes où la distinction fine entre races similaires peut être ambiguë
+- **F1-score macro** : moyenne non pondérée des F1-scores par classe, offrant une mesure équilibrée entre précision et rappel, particulièrement importante pour évaluer les performances sur les classes minoritaires
+
+#### Autres indicateurs mesurés
+
+- Temps d'entraînement par époque
+- Temps total d'entraînement
+- Temps d'inférence par image et par lot (*batch*)
+
+### Modèle Baseline : EfficientNetB0
+
+#### Architecture
+
+EfficientNetB0 est une variante de la famille EfficientNet, conçue selon la méthode *Compound Scaling* qui optimise simultanément la profondeur, la largeur et la résolution des images. Ce modèle utilise un *backbone* convolutionnel avec des blocs MBConv (Mobile Inverted Bottleneck Convolutions) et une fonction d'activation Swish. Pour notre tâche de classification sur 120 classes, nous avons adapté le modèle pré-entraîné sur ImageNet en remplaçant la couche de classification finale.
+
+#### Prétraitement des images
+
+Les images ont été redimensionnées à 224×224 pixels et normalisées selon les statistiques ImageNet (moyenne=[0.485, 0.456, 0.406], écart-type=[0.229, 0.224, 0.225]) avant d'être passées au modèle.
+
+#### Étapes d'entraînement
+
+L'entraînement a suivi une approche classique de *transfer learning* en deux étapes :
+
+##### Stage 1 : *Rebuild Top* (20 époques)
+
+- Seule la nouvelle tête de classification (*top layer*) est entraînée
+- Le *backbone* reste gelé (*frozen*) pour préserver les caractéristiques générales apprises sur ImageNet
+- *Learning rate* régulier : 1e-3
+- Taille des *batches* : 4 images
+- Taille des images : 224×224 pixels
+- Fonction de perte : *sparse categorical crossentropy*
+- Optimiseur : Adam
+- *Dropout rate* : 0.2 pour réduire le surapprentissage
+
+##### Stage 2 : *Fine-Tuning* (20 époques)
+
+- Dégel des couches profondes du *backbone* (à partir de *block7* pour EfficientNetB0)
+- La tête de classification, déjà entraînée, continue d'être affinée
+- *Learning rate* réduit : 1e-5 pour éviter de perturber les caractéristiques déjà apprises
+- Tous les autres paramètres restent identiques au Stage 1
+
+Cette approche en deux étapes permet d'abord adapter le classificateur aux nouvelles classes, puis d'affiner progressivement les caractéristiques du *backbone* pour qu'elles soient plus spécifiques à notre dataset.
+
+### Modèle SoTA : YOLO26 (version classification)
+
+#### Architecture
+
+YOLO26 en version classification conserve les innovations architecturales de la version détection, mais adaptées pour la tâche de classification. Le modèle repose sur un *backbone* CSPNet optimisé, des blocs C3k2 avec attention spatiale, et une tête de classification simplifiée. Contrairement aux versions précédentes de YOLO, YOLO26 élimine la DFL et adopte une inférence *end-to-end* sans NMS, même pour la classification.
+
+#### Gestion des données
+
+Contrairement à EfficientNetB0 qui utilise des séquences Keras personnalisées, YOLO26 nécessite une structure de répertoires spécifique. Nous avons donc créé un répertoire temporaire avec des liens symboliques organisant les images selon la structure attendue par Ultralytics : un dossier par ensemble (train/val/test) contenant des sous-dossiers par classe.
+
+#### Prétraitement des images
+
+YOLO26 applique ses propres transformations internes, incluant le redimensionnement, la normalisation, et des augmentations optionnelles (mosaïque, mixup) que nous avons désactivées pour une comparaison équitable avec EfficientNetB0.
+
+#### Étapes d'entraînement
+
+L'entraînement de YOLO26 a également suivi une approche de *transfer learning* en deux étapes, avec des paramètres adaptés :
+
+##### Stage 1 : *Freeze Backbone, Train Head and Neck* (20 époques)
+
+- Le *backbone* est entièrement gelé
+- Seules la tête (*head*) et le *neck* (couches de fusion de caractéristiques) sont entraînés
+- *Learning rate* régulier : 1e-3
+- Taille des *batches* : 8 images (supérieure à EfficientNetB0 grâce à l'optimisation mémoire de YOLO26)
+- Taille des images : 224×224 pixels
+- *Freeze depth* : 10 couches (tout le *backbone* gelé)
+
+##### Stage 2 : *Partial Unfreeze, Fine-Tune* (20 époques)
+
+- Dégel partiel du *backbone* : 10 - 2 = 8 couches gelées, 2 couches dégélées
+- La tête et le *neck* continuent d'être affinés
+- *Learning rate* réduit : 1e-5
+- Tous les autres paramètres restent identiques au Stage 1
+
+### Démarche d'optimisation
+
+Pour garantir une comparaison juste entre les deux modèles, nous avons veillé à :
+
+1. **Uniformité des données** : Même *split* stratifié, mêmes images, mêmes étiquettes
+2. **Uniformité des métriques** : Même jeu de métriques (accuracy, top-5 accuracy, F1-score macro)
+3. **Uniformité des conditions** : Même taille d'images (224×224), même nombre d'époques (20 par stage)
+4. **Reproductibilité** : Mêmes *random seeds* (42) pour les splits et initialisations
+
+L'optimisation s'est concentrée sur :
+
+- Le choix des hyperparamètres (*learning rates*, taille des *batches*) adaptés à chaque architecture
+- La stratégie de *fine-tuning* (quelles couches dégeler, dans quel ordre)
+- La prévention du surapprentissage (*dropout* pour EfficientNetB0, *regularization* intégrée pour YOLO26)
+
+### Les temps d'entraînement et d'inférence
+
+Les temps d'entraînement et d'inférence ont été mesurés de manière systématique pour évaluer l'efficacité computationnelle de chaque approche. Les résultats obtenus sur l'intégralité du dataset (120 classes, 20 époques par stage) révèlent des différences significatives :
+
+#### EfficientNetB0 (baseline)
+
+- Temps total d'entraînement (2 stages) : 10h09m (5h01m pour le *Rebuild Top* + 5h08m pour le *Fine-Tuning*)
+- Temps d'inférence moyen sur un échantillon de 100 images : 4,75s
+
+#### YOLO26 (SoTA) selon la taille du modèle
+
+- **yolo26n-cls** (nano) : entraînement en 53m, inférence sur 100 images en 0,98s
+- **yolo26s-cls** (small) : entraînement en 1h03m, inférence sur 100 images en 1,72s
+- **yolo26m-cls** (medium) : entraînement en 1h33m, inférence sur 100 images en 1,54s
+
+Ces mesures démontrent un avantage conséquent de YOLO26 en termes d'efficacité : un entraînement jusqu'à 10 fois plus rapide et une inférence 3 à 5 fois plus rapide que le modèle *baseline*, tout en maintenant une précision compétitive. Les tests préliminaires sur 3 classes ont confirmé cette tendance avec des temps proportionnellement réduits.
+
 ## Une synthèse des résultats
 
 <!--
