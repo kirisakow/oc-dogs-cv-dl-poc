@@ -364,6 +364,33 @@ Cette pertinence s’explique notamment par deux innovations architecturales de 
 - Optimiser chacun des 2 modèles pour les comparer dans leur meilleure version -- pas un système deux poids, deux mesures inique !
 -->
 
+### Limites de l’approche actuelle
+
+- **Optimisation inéquitable entre modèles** : la comparaison entre EfficientNetB0 et YOLO26 n’est pas parfaitement équitable, les hyperparamètres n’ont pas été optimisés de manière systématique pour chaque architecture. Une recherche exhaustive (type *GridSearch* ou *Bayesian Optimization*) permettrait une comparaison plus juste, conformément au principe « pas un système deux poids, deux mesures inique »
+- **Gestion des déséquilibres de classes** : bien que ImageNetDogs soit relativement équilibré, aucune stratégie spécifique (pondération des classes, *oversampling*) n’a été appliquée pour atténuer l’impact des variations de taille entre classes
+- **Prétraitement différentiel** : les pipelines de prétraitement diffèrent entre les modèles (normalisation ImageNet pour EfficientNetB0, prétraitement interne pour YOLO26), ce qui peut biaiser la comparaison purement architecturale
+- **Interprétabilité asymétrique** : l’analyse de *feature importance* n’a été implémentée que pour YOLO26 via EigenCAM. Une approche symétrique pour EfficientNetB0 (Grad-CAM, Score-CAM) offrirait une vue comparative complète
+
+### Améliorations envisageables
+
+#### Pour les performances
+
+- Optimisation hyperparamétrique systématique pour les deux modèles
+- Intégration d’augmentations avancées (*CutMix*, *MixUp*)
+- *Fine-tuning* complet du *backbone* pour EfficientNetB0
+- *Ensemble learning* combinant les prédictions des deux architectures
+
+#### Pour l’interprétabilité
+
+- Visualisation comparative des cartes de chaleur pour les deux modèles
+- Calcul de métriques quantitatives (*Deletion Score*, *Insertion Score*)
+- Analyse systématique des *misclassifications* via les cartes de chaleur
+
+#### Pour le déploiement
+
+- Test de la quantification INT8, surtout pour YOLO26 déjà optimisé *edge*
+- *Benchmark* matériel sur différents *hardwares* (CPU, GPU, NPU)
+
 [1]: http://vision.stanford.edu/aditya86/ImageNetDogs
 [2]: https://en.wikipedia.org/wiki/ImageNet#Categories
 [3]: https://arxiv.org/abs/2008.00299
