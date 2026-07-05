@@ -323,7 +323,38 @@ La migration vers YOLO26 se justifie pleinement dans notre contexte. Le modèle 
 *Présentez l’analyse de la feature importance globale et locale du nouveau modèle, en 2 pages maximum.*
 
 - L'interprétabilité : EigenCAM
+  - Les résultats de chaque inférence sont sauvegardés dans `./runs/classify/predict/nom_de_limage_sans_extension`.
+  - Le calcul et la visualisation de l'interprétabilité se fait à l'aide de la bibliothèque [EigenCAM pour YOLO26][d], clonée dans le répertoire `yolo_cam/`.
+
+[d]: https://github.com/rigvedrs/YOLO-26-CAM
 -->
+
+L’interprétabilité des modèles de *deep learning* est cruciale pour comprendre les décisions de classification, surtout dans un contexte où la distinction entre races de chiens similaires repose sur des caractéristiques morphologiques subtiles. Pour YOLO26, nous avons implémenté *Eigen Class Activation Mapping* (EigenCAM), une méthode récente basée sur l’article [arXiv:2008.00299][3], qui améliore les approches classiques comme Grad-CAM en utilisant la décomposition en valeurs singulières (SVD) des activations des couches cibles. Nous avons utilisé la bibliothèque [EigenCAM pour YOLO26][4] dont le code a été cloné dans le répertoire `yolo_cam/`.
+
+### Méthodologie
+
+EigenCAM génère des cartes de chaleur mettant en évidence les régions de l’image les plus influentes pour la prédiction. Contrairement aux méthodes basées sur les gradients, EigenCAM se concentre uniquement sur les activations, ce qui le rend plus robuste et plus rapide. Dans notre implémentation :
+
+- **Couche cible** : Les dernières couches dégélées du modèle (paramètre `layers_to_unfreeze=2` dans notre configuration)
+- **Tâche** : Classification (`task='cls'`)
+- **Visualisation** : Les cartes de chaleur sont superposées à l’image originale et sauvegardées dans `./runs/classify/predict/`
+
+### Feature importance globale vs locale
+
+- **Locale** : Chaque carte EigenCAM générée pour une image individuelle révèle quelles zones ont contribué à la prédiction pour cette instance spécifique. Par exemple, pour un *Afghan Hound*, la carte peut mettre en évidence les oreilles longues ou la fourrure caractéristique.
+- **Globale** : En agrégeant les cartes de chaleur sur l’ensemble du dataset, on peut identifier des *patterns* (motifs) récurrents pour chaque classe, révélant ainsi les caractéristiques visuelles les plus discriminantes apprises par le modèle.
+
+### Observations
+
+Les visualisations montrent que YOLO26 se concentre effectivement sur des régions sémantiquement pertinentes :
+
+- pour les races à oreilles longues (*Cocker Spaniel*, *Beagle*), les cartes mettent en évidence ces caractéristiques ;
+- pour les races à fourrure distinctive (*Poodle*, *Afghan Hound*), on observe une forte activation des textures.
+
+Cette pertinence s’explique notamment par deux innovations architecturales de YOLO26 :
+
+- la suppression du NMS (*Non-Maximum Suppression*) élimine une étape de post-traitement susceptible d’introduire des biais en filtrant ou fusionnant des détections selon des seuils arbitraires. L’inférence *end-to-end* produit directement des prédictions finalisées, rendant les cartes de chaleur plus fidèles aux activations réelles du réseau, sans distorsion due à des règles externes ;
+- la suppression de la DFL (*Distribution Focal Loss*) allège significativement le graphe computationnel, réduisant les dépendances entre modules. Cela permet un suivi plus direct du flux des caractéristiques depuis l’entrée jusqu’à la sortie, renforçant la fiabilité des visualisations.
 
 ## Les limites et les améliorations possibles
 
@@ -335,3 +366,5 @@ La migration vers YOLO26 se justifie pleinement dans notre contexte. Le modèle 
 
 [1]: http://vision.stanford.edu/aditya86/ImageNetDogs
 [2]: https://en.wikipedia.org/wiki/ImageNet#Categories
+[3]: https://arxiv.org/abs/2008.00299
+[4]: https://github.com/rigvedrs/YOLO-26-CAM
