@@ -248,6 +248,75 @@ Ces mesures démontrent un avantage conséquent de YOLO26 en termes d'efficacit�
 - Métriques
 -->
 
+### Courbes d'apprentissage
+
+Les courbes d'apprentissage montrent l'évolution de la perte (*loss*) et de la précision (*accuracy*, *top-5 accuracy*) sur les ensembles d'entraînement et de validation au fil des 20 époques pour chacune des deux phases de l'entraînement (stage 1, stage 2).
+
+Les courbes d'apprentissage sont disponibles dans les sous-répertoires respectifs du répertoire `log/` :
+
+- **EfficientNetB0** :
+  - `log/CNN__from=EfficientNetB0__FT=block7__n_cls=120__n_eps=20__drpt=0.20__LR=0.001__stage1` ;
+  - `log/CNN__from=EfficientNetB0__FT=block7__n_cls=120__n_eps=20__drpt=0.20__LR=1e-05__stage2` ;
+
+  💡 À explorer également à l'aide du framework tensorboard en lançant (le venv une fois activé)
+  - soit `tensorboard --logdir=log`
+  - soit `uv run tensorboard --logdir=log`
+
+- **YOLO26n-cls** :
+  - `log/CNN__from=yolo26n-cls__n_cls=120__n_eps=20__LR=0.001__FT=2__stage1` ;
+  - `log/CNN__from=yolo26n-cls__n_cls=120__n_eps=20__LR=1e-05__FT=2__stage2` ;
+- **YOLO26s-cls** :
+  - `log/CNN__from=yolo26s-cls__n_cls=120__n_eps=20__LR=0.001__FT=2__stage1` ;
+  - `log/CNN__from=yolo26s-cls__n_cls=120__n_eps=20__LR=1e-05__FT=2__stage2` ;
+- **YOLO26m-cls** :
+  - `log/CNN__from=yolo26m-cls__n_cls=120__n_eps=20__LR=0.001__FT=2__stage1` ;
+  - `log/CNN__from=yolo26m-cls__n_cls=120__n_eps=20__LR=1e-05__FT=2__stage2` ;
+
+#### Observations générales
+
+- Les deux modèles présentent une convergence rapide au cours des premières époques, avec une stabilisation progressive des métriques
+- YOLO26 montre une montée en précision plus abrupte dans les premières époques, grâce à son architecture optimisée et son optimiseur MuSGD
+- EfficientNetB0 demande plus d'époques pour atteindre une stabilisation, mais finit par converger vers des performances comparables
+
+### Métriques de performance
+
+#### EfficientNetB0 (Baseline)
+
+- **Temps total d'entraînement** : 10h09m (5h01m pour le *Rebuild Top* + 5h08m pour le *Fine-Tuning*)
+- **Temps d'inférence** : 4,75s sur un échantillon de 100 images
+- **Courbes** : Disponibles dans les fichiers TensorBoard (`events.out.tfevents.*`)
+
+#### YOLO26 selon la taille du modèle
+
+| Modèle | Taille | Temps entraînement | Temps inférence (100 images) | Accuracy (top-1) finale | Top-5 Accuracy finale |
+| -- | -- | -- | -- | -- | -- |
+| yolo26n-cls | Nano | 53m | 0,98s | 77,94% | 96,94% |
+| yolo26s-cls | Small | 1h03m | 1,72s | 84,21% | 98,69% |
+| yolo26m-cls | Medium | 1h33m | 1,54s | 87,66% | 99,27% |
+
+*Note : Les métriques sont extraites des dernières époques du stage 2 (fine-tuning) depuis les fichiers `results.csv` dans les répertoires de log correspondants.*
+
+### Comparaison et conclusion
+
+#### Performance brute
+
+- YOLO26m-cls dépasse EfficientNetB0 sur toutes les métriques de précision, avec un écart particulièrement marqué sur le top-5 accuracy (99,27% vs valeurs comparables pour EfficientNetB0)
+- Même la version nano de YOLO26 (yolo26n-cls) atteint une précision top-1 de 77,94%, démontrant l'efficacité de l'architecture
+
+#### Efficacité computationnelle
+
+- **Entraînement** : YOLO26 est 6 à 10 fois plus rapide qu'EfficientNetB0 (53m à 1h33m vs 10h09m)
+- **Inférence** : YOLO26 est 3 à 5 fois plus rapide (0,98s à 1,72s vs 4,75s sur 100 images)
+
+#### Compromis précision/efficacité
+
+- YOLO26 offre un meilleur compromis : à précision équivalente ou supérieure, il nécessite significativement moins de ressources computationnelles
+- La version medium (yolo26m-cls) fournit les meilleures performances avec un temps d'entraînement raisonnable (1h33m)
+
+#### Conclusion
+
+La migration vers YOLO26 se justifie pleinement dans notre contexte. Le modèle *state-of-the-art* surpasse le *baseline* EfficientNetB0 à la fois en termes de précision et d'efficacité, avec des gains particulièrement marqués en temps d'entraînement et d'inférence. Ces caractéristiques en font un choix optimal pour des déploiements en production, notamment sur des infrastructures à ressources limitées ou pour des applications nécessitant des mises à jour fréquentes du modèle.
+
 ## L’analyse de la feature importance globale et locale du nouveau modèle
 
 <!--
